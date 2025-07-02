@@ -1,0 +1,192 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+		<title>"Magical" Door by qubibi</title>
+		<meta name="viewport" content="width=device-width">
+		<style>
+			html, body, .p5Canvas, main {  -webkit-touch-callout: none;  -webkit-user-select: none;  user-select: none; }
+			html, body { overflow: hidden; background-color: #000}
+			 body {margin:0; padding:0; background-color: #000;}
+			.p5Canvas {height:100% !important; width:auto !important; object-fit: cover; }
+			main { height:100%; width:100%; display:flex; position:relative; align-items: center; justify-content: center; margin: auto; }
+			#back { position: fixed; z-index:99; left: 1.5vh; top: 1.5vh}
+			#back img { width: 3vh; }
+			#soundonoff { position:absolute; z-index: 199; left:.77vh; bottom:-10.5vh; user-select: none; }
+			#soundonoff img {width: 4vh; }
+			#qr  { position:absolute; z-index: 199; right:1vh; bottom:1vh; }
+			html {
+			touch-action: manipulation;
+			}
+			
+			/* インタラクション無効化 */
+			body.interaction-disabled {
+				pointer-events: none;
+			}
+			body.interaction-disabled #audio-cover {
+				pointer-events: all;
+			}
+			
+			/* 音声有効化カバー */
+			#audio-cover {
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				background-color: #999;
+				z-index: 1000;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				cursor: pointer;
+				touch-action: none; /* タッチ操作を完全制御 */
+				-webkit-touch-callout: none;
+				-webkit-user-select: none;
+				user-select: none;
+				-webkit-tap-highlight-color: transparent; /* タップハイライトを無効化 */
+			}
+			
+			#cover-content {
+				text-align: center;
+				color: #000;
+				font-family: Arial, sans-serif;
+			}
+			
+			#cover-content h1 {
+				font-size: 2rem;
+				margin-bottom: 2rem;
+				font-weight: normal;
+			}
+			
+			#cover-content p {
+				font-size: 1.0rem;
+				margin: 0.5rem 0;
+			}
+			
+			#tap-instruction {
+				font-size: 1rem;
+				margin-top: 3rem;
+				opacity: 0.8;
+			}
+			
+			/* カバーが非表示の時 */
+			#audio-cover.hidden {
+				display: none;
+			}
+		</style>
+   <script id="fxhash-snippet">
+      //---- do not edit the following code (you can indent as you wish)
+      let alphabet = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
+      var fxhash = "oo" + Array(49).fill(0).map(_=>alphabet[(Math.random()*alphabet.length)|0]).join('')
+      let b58dec = str=>[...str].reduce((p,c)=>p*alphabet.length+alphabet.indexOf(c)|0, 0)
+      let fxhashTrunc = fxhash.slice(2)
+      let regex = new RegExp(".{" + ((fxhash.length/4)|0) + "}", 'g')
+      let hashes = fxhashTrunc.match(regex).map(h => b58dec(h))
+      let sfc32 = (a, b, c, d) => {
+        return () => {
+          a |= 0; b |= 0; c |= 0; d |= 0
+          var t = (a + b | 0) + d | 0
+          d = d + 1 | 0
+          a = b ^ b >>> 9
+          b = c + (c << 3) | 0
+          c = c << 21 | c >>> 11
+          c = c + t | 0
+          return (t >>> 0) / 4294967296
+        }
+      }
+      var fxrand = sfc32(...hashes)
+      // true if preview mode active, false otherwise
+      // you can append preview=1 to the URL to simulate preview active
+      var isFxpreview = new URLSearchParams(window.location.search).get('preview') === "1"
+      // call this method to trigger the preview
+      function fxpreview() {
+        console.log("fxhash: TRIGGER PREVIEW")
+      }
+      //---- /do not edit the following code
+    </script>
+		<script defer src="./lib/p5.js"></script>		
+		<script defer src="./lib/Pizzicato_qbb.js"></script>
+	</head>
+	<body class="interaction-disabled">
+		<script src="./lib/inobounce.min.js"></script>
+<!-- 
+Music 
+Mysz-Gmeiner M 3 Side B – Der Nussbaum (Schumann)
+All recordings are from Grammophon ca. 1928
+Public Domain Mark 1.0
+https://archive.org/details/mysz-gmeiner-m-3-side-b/12+–+Mysz-Gmeiner+M+3+Side+B+–+Der+Nussbaum+(Schumann)+[185+bk%2C+62533].wav
+ -->
+		
+		<!-- 音声有効化カバー -->
+		<div id="audio-cover">
+			<div id="cover-content">
+				<p>Magical Door by qubibi<br>
+				*Audio enabled<br>
+				*Interaction required<br>
+				
+			</div>
+		</div>
+		
+		<div id="soundonoff"><a href="javascript:f_usertouchstart()"><img src="./imptmp/sound_on.svg"></a></div>
+
+		<main>
+		</main>
+		<script defer src="./codetmp/userandhtml.js"></script>
+		<script src="./code/import.js"></script>
+<script>
+  // 音声カバーのmousedown/touchstart処理
+  function handleCoverInteraction(e) {
+    e.preventDefault(); // デフォルト動作を防ぐ
+    e.stopPropagation(); // イベントの伝播を止める
+    e.stopImmediatePropagation(); // 即座に伝播を止める
+    
+    // iOS Chrome判定
+    var isIOSChrome = /CriOS/.test(navigator.userAgent);
+    if (isIOSChrome) {
+      console.log("iOS Chrome detected - handling audio immediately");
+    }
+    
+    f_usertouchstart();
+    document.getElementById('audio-cover').classList.add('hidden');
+    
+    // 0.29秒後にタップ可能にする（ただしtouchmoveはまだ無効）
+    setTimeout(function() {
+      document.body.classList.remove('interaction-disabled');
+      is_interaction_enabled = true; // タップ可能に
+      is_interaction_ready = true; // 最初のタップ待機状態
+    }, 290);
+  }
+  
+  // カバー上のタッチムーブを完全に無効化
+  function blockCoverMove(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  
+  var audioCover = document.getElementById('audio-cover');
+  
+  // コンテキストメニューを完全に無効化
+  audioCover.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+  });
+  
+  audioCover.addEventListener('mousedown', handleCoverInteraction);
+  audioCover.addEventListener('touchstart', handleCoverInteraction, {passive: false});
+  audioCover.addEventListener('touchmove', blockCoverMove, {passive: false});
+  audioCover.addEventListener('mousemove', blockCoverMove);
+  
+  document.documentElement.addEventListener('touchstart', function (e) {
+  if (e.touches.length >= 2) {e.preventDefault();}
+  }, {passive: false});
+  var t = 0;
+  document.documentElement.addEventListener('touchend', function (e) {
+  var now = new Date().getTime();
+  if ((now - t) < 350){
+    e.preventDefault();
+  }
+  t = now;
+  }, false);
+</script>
+	</body>
+</html>
