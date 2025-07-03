@@ -203,8 +203,8 @@ https://archive.org/details/mysz-gmeiner-m-3-side-b/12+–+Mysz-Gmeiner+M+3+Side
   audioCover.addEventListener('touchmove', blockCoverMove, {passive: false});
   audioCover.addEventListener('mousemove', blockCoverMove);
   
-  // 290ms後の最初のタップでインタラクション開始
-  document.addEventListener('touchstart', function(e) {
+  // 290ms後の最初のタップ/クリックでインタラクション開始
+  function handleFirstInteraction(e) {
     // カバー除去後290ms以内のタップは無視
     if (coverRemoveTime > 0 && (Date.now() - coverRemoveTime) < 290) {
       e.preventDefault();
@@ -225,9 +225,13 @@ https://archive.org/details/mysz-gmeiner-m-3-side-b/12+–+Mysz-Gmeiner+M+3+Side
       is_interaction_ready = true;
       is_first_touch_done = true;
       firstValidTapDetected = true;
-      console.log("First valid tap after 290ms - interactions enabled!");
+      console.log("First valid interaction after 290ms - interactions enabled!");
     }
-  }, {passive: false, capture: true}); // captureフェーズで処理
+  }
+  
+  // タッチとマウス両方に対応
+  document.addEventListener('touchstart', handleFirstInteraction, {passive: false, capture: true});
+  document.addEventListener('mousedown', handleFirstInteraction, {passive: false, capture: true});
   
   document.documentElement.addEventListener('touchstart', function (e) {
   if (e.touches.length >= 2) {e.preventDefault();}
