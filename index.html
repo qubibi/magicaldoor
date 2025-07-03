@@ -71,7 +71,10 @@
 			
 			/* カバーが非表示の時 */
 			#audio-cover.hidden {
-				display: none;
+				visibility: hidden;
+				pointer-events: none;
+				opacity: 0;
+				transition: opacity 0.2s ease-out;
 			}
 		</style>
    <script id="fxhash-snippet">
@@ -134,11 +137,20 @@ https://archive.org/details/mysz-gmeiner-m-3-side-b/12+–+Mysz-Gmeiner+M+3+Side
 		<script defer src="./codetmp/userandhtml.js"></script>
 		<script src="./code/import.js"></script>
 <script>
+  // カバー処理の状態管理
+  var isCoverProcessing = false;
+  var coverRemoveTime = 0;
+  
   // 音声カバーのmousedown/touchstart処理
   function handleCoverInteraction(e) {
     e.preventDefault(); // デフォルト動作を防ぐ
     e.stopPropagation(); // イベントの伝播を止める
-    e.stopImmediatePropagation(); // 即座に伝播を止める
+    // stopImmediatePropagationを削除（iOS Chromeの問題回避）
+    
+    // 二重実行防止
+    if (isCoverProcessing) return;
+    isCoverProcessing = true;
+    coverRemoveTime = Date.now();
     
     // iOS Chrome判定
     var isIOSChrome = /CriOS/.test(navigator.userAgent);
@@ -147,13 +159,16 @@ https://archive.org/details/mysz-gmeiner-m-3-side-b/12+–+Mysz-Gmeiner+M+3+Side
     }
     
     f_usertouchstart();
+    
+    // カバーを視覚的に非表示（DOMからは削除しない）
     document.getElementById('audio-cover').classList.add('hidden');
     
-    // 0.29秒後にタップ可能にする（ただしtouchmoveはまだ無効）
+    // 0.29秒後にタップ可能にする
     setTimeout(function() {
       document.body.classList.remove('interaction-disabled');
       is_interaction_enabled = true; // タップ可能に
       is_interaction_ready = true; // 最初のタップ待機状態
+      console.log("Interaction enabled after 290ms");
     }, 290);
   }
   
@@ -175,6 +190,17 @@ https://archive.org/details/mysz-gmeiner-m-3-side-b/12+–+Mysz-Gmeiner+M+3+Side
   audioCover.addEventListener('touchstart', handleCoverInteraction, {passive: false});
   audioCover.addEventListener('touchmove', blockCoverMove, {passive: false});
   audioCover.addEventListener('mousemove', blockCoverMove);
+  
+  // 早すぎるタップを防ぐグローバルハンドラ
+  document.addEventListener('touchstart', function(e) {
+    // カバー除去後290ms以内のタップは無視
+    if (coverRemoveTime > 0 && (Date.now() - coverRemoveTime) < 290) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log("Early tap blocked: " + (Date.now() - coverRemoveTime) + "ms after cover removal");
+      return false;
+    }
+  }, {passive: false, capture: true}); // captureフェーズで処理
   
   document.documentElement.addEventListener('touchstart', function (e) {
   if (e.touches.length >= 2) {e.preventDefault();}

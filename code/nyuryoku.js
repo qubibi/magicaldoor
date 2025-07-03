@@ -207,12 +207,12 @@ function nyu_kihon() {
 			nyu.now_tx = mouseX;
 			nyu.now_ty = mouseY;
 		} else {
-			
-			if (touches[0].x === 'undefined') {
-
-			} else {
-				nyu.now_tx = touches[0].x;
-				nyu.now_ty = touches[0].y;
+			// touches配列の安全なチェック
+			if (touches && touches.length > 0 && touches[0]) {
+				if (touches[0].x !== undefined && touches[0].y !== undefined) {
+					nyu.now_tx = touches[0].x;
+					nyu.now_ty = touches[0].y;
+				}
 			}
 		}
 		nyu.diff_tx = nyu.now_tx - nyu.bef_tx
@@ -277,10 +277,16 @@ function touchStarted() {
 	
 	if (ososos != 'pc') { 
 		if (!is_user_started) f_usertouchstart();	
-		if (touches[0].x === 'undefined') {
+		// touches配列の安全なチェック
+		if (touches && touches.length > 0 && touches[0]) {
+			if (touches[0].x !== undefined && touches[0].y !== undefined) {
+				nyu.now_tx = nyu.sta_tx = touches[0].x;
+				nyu.now_ty = nyu.sta_ty = touches[0].y;
+			} else {
+				console.log("Touch coordinates undefined");
+			}
 		} else {
-			nyu.now_tx = nyu.sta_tx =  touches[0].x;
-			nyu.now_ty = nyu.sta_ty = touches[0].y;
+			console.log("No valid touches detected");
 		}
 		nyu.puramai = 1;
 		is_press = true;

@@ -125,6 +125,23 @@ function setup() {
 	if (is_forhicetnunc) {
 		resizeCanvas(windowHeight, windowHeight)
 	}
+	
+	// フェイルセーフ：1秒後に強制的にインタラクションを有効化
+	setTimeout(function() {
+		if (!is_interaction_enabled || !is_first_touch_done) {
+			console.log("Failsafe: Force enabling interaction after 1 second");
+			is_interaction_enabled = true;
+			is_interaction_ready = true;
+			is_first_touch_done = true;
+			document.body.classList.remove('interaction-disabled');
+			
+			// カバーが残っていたら強制削除
+			var cover = document.getElementById('audio-cover');
+			if (cover && !cover.classList.contains('hidden')) {
+				cover.classList.add('hidden');
+			}
+		}
+	}, 1000);
 }
 
 function windowResized() {
