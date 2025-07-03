@@ -1,5 +1,15 @@
 oto = {}
+oto.setupCount = 0;  // oto_setupの実行回数を記録
 function oto_setup() {
+	oto.setupCount++;
+	console.log("oto_setup() executed - count:", oto.setupCount);
+	
+	// 2回目以降の実行を防ぐ
+	if (oto.setupCount > 1) {
+		console.warn("oto_setup() already executed, skipping...");
+		return;
+	}
+	
 	au_music.volume = 0;
 	au_music.play(0.1, Math.round(qb.rndmmm(0,30)) );
 	if (ososos=="pc") {

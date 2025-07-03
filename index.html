@@ -111,6 +111,17 @@
 		<script defer src="./lib/Pizzicato_qbb.js"></script>
 	</head>
 	<body class="interaction-disabled">
+		<!-- デバッグ用状態表示 -->
+		<div id="debug-status" style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: white; padding: 10px; font-family: monospace; font-size: 12px; z-index: 10000;">
+			<div>is_sound: <span id="debug-sound">false</span></div>
+			<div>oto_setup_count: <span id="debug-oto-count">0</span></div>
+			<div>group_effects: <span id="debug-group-effects">0</span></div>
+			<div>is_interaction_enabled: <span id="debug-enabled">false</span></div>
+			<div>is_interaction_ready: <span id="debug-ready">false</span></div>
+			<div>is_first_touch_done: <span id="debug-done">false</span></div>
+			<div>early_tap_blocked: <span id="debug-blocked">false</span></div>
+			<div>first_valid_tap: <span id="debug-valid-tap">false</span></div>
+		</div>
 		<script src="./lib/inobounce.min.js"></script>
 <!-- 
 Music 
@@ -140,6 +151,8 @@ https://archive.org/details/mysz-gmeiner-m-3-side-b/12+–+Mysz-Gmeiner+M+3+Side
   // カバー処理の状態管理
   var isCoverProcessing = false;
   var coverRemoveTime = 0;
+  var lastEarlyTapBlocked = false;
+  var firstValidTapDetected = false;
   
   // 音声カバーのmousedown/touchstart処理
   function handleCoverInteraction(e) {
@@ -163,13 +176,12 @@ https://archive.org/details/mysz-gmeiner-m-3-side-b/12+–+Mysz-Gmeiner+M+3+Side
     // カバーを視覚的に非表示（DOMからは削除しない）
     document.getElementById('audio-cover').classList.add('hidden');
     
-    // 0.29秒後にタップ可能にする
-    setTimeout(function() {
-      document.body.classList.remove('interaction-disabled');
-      is_interaction_enabled = true; // タップ可能に
-      is_interaction_ready = true; // 最初のタップ待機状態
-      console.log("Interaction enabled after 290ms");
-    }, 290);
+    // カバーが消えたら、touchmoveのブロックを解除
+    audioCover.removeEventListener('touchmove', blockCoverMove);
+    audioCover.removeEventListener('mousemove', blockCoverMove);
+    
+    // 290ms後はタイマーで何もしない（最初のタップを待つだけ）
+    console.log("Cover removed, waiting for first tap after 290ms");
   }
   
   // カバー上のタッチムーブを完全に無効化
@@ -191,14 +203,29 @@ https://archive.org/details/mysz-gmeiner-m-3-side-b/12+–+Mysz-Gmeiner+M+3+Side
   audioCover.addEventListener('touchmove', blockCoverMove, {passive: false});
   audioCover.addEventListener('mousemove', blockCoverMove);
   
-  // 早すぎるタップを防ぐグローバルハンドラ
+  // 290ms後の最初のタップでインタラクション開始
   document.addEventListener('touchstart', function(e) {
     // カバー除去後290ms以内のタップは無視
     if (coverRemoveTime > 0 && (Date.now() - coverRemoveTime) < 290) {
       e.preventDefault();
       e.stopPropagation();
+      lastEarlyTapBlocked = true;
       console.log("Early tap blocked: " + (Date.now() - coverRemoveTime) + "ms after cover removal");
+      // 1秒後にフラグをリセット
+      setTimeout(function() {
+        lastEarlyTapBlocked = false;
+      }, 1000);
       return false;
+    }
+    
+    // 290ms後の最初のタップでインタラクション開始
+    if (coverRemoveTime > 0 && !is_interaction_enabled && (Date.now() - coverRemoveTime) >= 290) {
+      document.body.classList.remove('interaction-disabled');
+      is_interaction_enabled = true;
+      is_interaction_ready = true;
+      is_first_touch_done = true;
+      firstValidTapDetected = true;
+      console.log("First valid tap after 290ms - interactions enabled!");
     }
   }, {passive: false, capture: true}); // captureフェーズで処理
   
@@ -213,6 +240,31 @@ https://archive.org/details/mysz-gmeiner-m-3-side-b/12+–+Mysz-Gmeiner+M+3+Side
   }
   t = now;
   }, false);
+  
+  // デバッグ表示を100ms毎に更新
+  setInterval(function() {
+    document.getElementById('debug-sound').textContent = is_sound;
+    
+    // oto.setupCountを表示
+    var otoCount = 0;
+    if (typeof oto !== 'undefined' && oto.setupCount !== undefined) {
+      otoCount = oto.setupCount;
+    }
+    document.getElementById('debug-oto-count').textContent = otoCount;
+    
+    // au_musicgroupのエフェクト数を確認
+    var groupEffectsCount = 0;
+    if (typeof au_musicgroup !== 'undefined' && au_musicgroup && au_musicgroup.effects) {
+      groupEffectsCount = au_musicgroup.effects.length;
+    }
+    document.getElementById('debug-group-effects').textContent = groupEffectsCount;
+    
+    document.getElementById('debug-enabled').textContent = is_interaction_enabled;
+    document.getElementById('debug-ready').textContent = is_interaction_ready;
+    document.getElementById('debug-done').textContent = is_first_touch_done;
+    document.getElementById('debug-blocked').textContent = lastEarlyTapBlocked;
+    document.getElementById('debug-valid-tap').textContent = firstValidTapDetected;
+  }, 100);
 </script>
 	</body>
 </html>
