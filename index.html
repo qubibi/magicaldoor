@@ -121,6 +121,9 @@
 			<div>is_first_touch_done: <span id="debug-done">false</span></div>
 			<div>early_tap_blocked: <span id="debug-blocked">false</span></div>
 			<div>first_valid_tap: <span id="debug-valid-tap">false</span></div>
+			<div>touch_count: <span id="debug-touch-count">0</span></div>
+			<div>nyu.now_ty: <span id="debug-now-ty">0</span></div>
+			<div>nyu.diff_ty: <span id="debug-diff-ty">0</span></div>
 		</div>
 		<script src="./lib/inobounce.min.js"></script>
 <!-- 
@@ -268,6 +271,11 @@ https://archive.org/details/mysz-gmeiner-m-3-side-b/12+–+Mysz-Gmeiner+M+3+Side
     document.getElementById('debug-done').textContent = is_first_touch_done;
     document.getElementById('debug-blocked').textContent = lastEarlyTapBlocked;
     document.getElementById('debug-valid-tap').textContent = firstValidTapDetected;
+    
+    // 新しいデバッグ値の表示
+    document.getElementById('debug-touch-count').textContent = (typeof touch_count !== 'undefined') ? touch_count : 0;
+    document.getElementById('debug-now-ty').textContent = (typeof nyu !== 'undefined' && nyu && nyu.now_ty !== undefined) ? nyu.now_ty.toFixed(2) : 0;
+    document.getElementById('debug-diff-ty').textContent = (typeof nyu !== 'undefined' && nyu && nyu.diff_ty !== undefined) ? nyu.diff_ty.toFixed(2) : 0;
   }, 100);
 </script>
 	</body>

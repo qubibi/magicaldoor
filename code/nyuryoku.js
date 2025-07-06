@@ -1,6 +1,8 @@
 
 
 nyu = {}
+var touch_count = 0; // タッチ回数カウンター
+
 function nyu_setup() {
 	nyu.now_oa = 0;
 	nyu.now_ob = 0;
@@ -250,6 +252,7 @@ function mousePressed() {
 		is_press = true;
 		// nyu.cc_forsavemode = 0;
 		nyu.cc_press += 1;
+		touch_count++; // タッチ回数をインクリメント
 
 		if (is_savemode && nyu.cc_forsavemode > 0) {
 			nyu.cc_forsavemode = 0;
@@ -291,6 +294,7 @@ function touchStarted() {
 		nyu.puramai = 1;
 		is_press = true;
 		nyu.cc_press += 1;
+		touch_count++; // タッチ回数をインクリメント
 
 		if (is_savemode && nyu.cc_forsavemode > 0) {
 			nyu.cc_forsavemode = 0;
