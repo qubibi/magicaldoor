@@ -126,6 +126,8 @@
 			<div>nyu.diff_ty: <span id="debug-diff-ty">0</span></div>
 			<div>native_touchstart: <span id="debug-native-touchstart">0</span></div>
 			<div>touchcancel_count: <span id="debug-touchcancel">0</span></div>
+			<div>debug_touch_y: <span id="debug-touch-y">-</span></div>
+			<div>nyu_kihon_called: <span id="debug-nyu-kihon">0</span></div>
 		</div>
 		<script src="./lib/inobounce.min.js"></script>
 <!-- 
@@ -293,6 +295,8 @@ https://archive.org/details/mysz-gmeiner-m-3-side-b/12+–+Mysz-Gmeiner+M+3+Side
     document.getElementById('debug-diff-ty').textContent = (typeof nyu !== 'undefined' && nyu && nyu.diff_ty !== undefined) ? nyu.diff_ty.toFixed(2) : 0;
     document.getElementById('debug-native-touchstart').textContent = native_touchstart_count;
     document.getElementById('debug-touchcancel').textContent = touchcancel_count;
+    document.getElementById('debug-touch-y').textContent = (window.debug_touch_y !== undefined) ? window.debug_touch_y.toFixed(2) : '-';
+    document.getElementById('debug-nyu-kihon').textContent = window.debug_nyu_kihon_called || 0;
   }, 100);
 </script>
 	</body>

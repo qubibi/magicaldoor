@@ -198,6 +198,9 @@ function f_savemode_and_autodoor() {
 
 
 function nyu_kihon() {
+	// デバッグ用カウンター
+	window.debug_nyu_kihon_called = (window.debug_nyu_kihon_called || 0) + 1;
+	
 	// 最初のタップが完了するまで、すべての入力処理をスキップ
 	if (!is_interaction_enabled || !is_first_touch_done) return;
 	
@@ -355,6 +358,8 @@ window.addEventListener('load', function() {
 	document.addEventListener('touchmove', function(e) {
 		if (ososos != 'pc' && e.touches.length > 0) {
 			currentTouches = e.touches;
+			// デバッグ用：Y座標を直接グローバル変数に保存
+			window.debug_touch_y = e.touches[0].clientY;
 		}
 	}, {passive: false});
 });
