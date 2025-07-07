@@ -124,6 +124,8 @@
 			<div>touch_count: <span id="debug-touch-count">0</span></div>
 			<div>nyu.now_ty: <span id="debug-now-ty">0</span></div>
 			<div>nyu.diff_ty: <span id="debug-diff-ty">0</span></div>
+			<div>native_touchstart: <span id="debug-native-touchstart">0</span></div>
+			<div>touchcancel_count: <span id="debug-touchcancel">0</span></div>
 		</div>
 		<script src="./lib/inobounce.min.js"></script>
 <!-- 
@@ -156,6 +158,8 @@ https://archive.org/details/mysz-gmeiner-m-3-side-b/12+–+Mysz-Gmeiner+M+3+Side
   var coverRemoveTime = 0;
   var lastEarlyTapBlocked = false;
   var firstValidTapDetected = false;
+  var native_touchstart_count = 0;
+  var touchcancel_count = 0;
   
   // 音声カバーのmousedown/touchstart処理
   function handleCoverInteraction(e) {
@@ -236,6 +240,17 @@ https://archive.org/details/mysz-gmeiner-m-3-side-b/12+–+Mysz-Gmeiner+M+3+Side
   document.addEventListener('touchstart', handleFirstInteraction, {passive: false, capture: true});
   document.addEventListener('mousedown', handleFirstInteraction, {passive: false, capture: true});
   
+  // ネイティブtouchstartカウント（デバッグ用）
+  document.addEventListener('touchstart', function(e) {
+    native_touchstart_count++;
+  }, {passive: true});
+  
+  // touchcancelイベントの監視
+  document.addEventListener('touchcancel', function(e) {
+    touchcancel_count++;
+    console.log('touchcancel detected!');
+  }, {passive: true});
+  
   document.documentElement.addEventListener('touchstart', function (e) {
   if (e.touches.length >= 2) {e.preventDefault();}
   }, {passive: false});
@@ -276,6 +291,8 @@ https://archive.org/details/mysz-gmeiner-m-3-side-b/12+–+Mysz-Gmeiner+M+3+Side
     document.getElementById('debug-touch-count').textContent = (typeof touch_count !== 'undefined') ? touch_count : 0;
     document.getElementById('debug-now-ty').textContent = (typeof nyu !== 'undefined' && nyu && nyu.now_ty !== undefined) ? nyu.now_ty.toFixed(2) : 0;
     document.getElementById('debug-diff-ty').textContent = (typeof nyu !== 'undefined' && nyu && nyu.diff_ty !== undefined) ? nyu.diff_ty.toFixed(2) : 0;
+    document.getElementById('debug-native-touchstart').textContent = native_touchstart_count;
+    document.getElementById('debug-touchcancel').textContent = touchcancel_count;
   }, 100);
 </script>
 	</body>

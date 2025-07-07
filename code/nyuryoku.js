@@ -312,13 +312,13 @@ function touchEnded(){
 }
 
 // p5.jsのデフォルトタッチムーブハンドラをオーバーライド
-// function touchMoved() {
-// 	// インタラクションが有効になるまで、デフォルトの動作を防ぐ
-// 	if (!is_interaction_enabled || !is_first_touch_done) {
-// 		return false; // p5.jsに伝播を止めるよう指示
-// 	}
-// 	// 通常のタッチムーブ処理はnyu_kihon()で行う
-// }
+function touchMoved() {
+	// インタラクションが有効になるまで、デフォルトの動作を防ぐ
+	if (!is_interaction_enabled || !is_first_touch_done) {
+		return false; // p5.jsに伝播を止めるよう指示
+	}
+	// 通常のタッチムーブ処理はnyu_kihon()で行う
+}
 
 // p5.jsのデフォルトマウスドラッグハンドラもオーバーライド
 function mouseDragged() {
