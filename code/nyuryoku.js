@@ -2,6 +2,7 @@
 
 nyu = {}
 var touch_count = 0; // タッチ回数カウンター
+var currentTouches = null; // ネイティブタッチ情報を保持
 
 function nyu_setup() {
 	nyu.now_oa = 0;
@@ -209,11 +210,17 @@ function nyu_kihon() {
 			nyu.now_tx = mouseX;
 			nyu.now_ty = mouseY;
 		} else {
-			// touches配列の安全なチェック
-			if (touches && touches.length > 0 && touches[0]) {
-				if (touches[0].x !== undefined && touches[0].y !== undefined) {
-					nyu.now_tx = touches[0].x;
-					nyu.now_ty = touches[0].y;
+			// ネイティブタッチ情報またはp5.jsのtouches配列を使用
+			var touchInfo = currentTouches || touches;
+			if (touchInfo && touchInfo.length > 0 && touchInfo[0]) {
+				if (currentTouches) {
+					// ネイティブタッチの場合はclientX/clientYを使用
+					nyu.now_tx = touchInfo[0].clientX;
+					nyu.now_ty = touchInfo[0].clientY;
+				} else if (touchInfo[0].x !== undefined && touchInfo[0].y !== undefined) {
+					// p5.jsのtouchesの場合
+					nyu.now_tx = touchInfo[0].x;
+					nyu.now_ty = touchInfo[0].y;
 				}
 			}
 		}
@@ -271,44 +278,12 @@ function mouseReleased() {
 }
 
 function touchStarted() {
-	if (!is_interaction_enabled) return;
-	
-	// 0.29秒後、最初のタップで完全にインタラクション有効化
-	if (is_interaction_ready && !is_first_touch_done) {
-		is_first_touch_done = true;
-	}
-	
-	if (ososos != 'pc') { 
-		if (!is_user_started) f_usertouchstart();	
-		// touches配列の安全なチェック
-		if (touches && touches.length > 0 && touches[0]) {
-			if (touches[0].x !== undefined && touches[0].y !== undefined) {
-				nyu.now_tx = nyu.sta_tx = touches[0].x;
-				nyu.now_ty = nyu.sta_ty = touches[0].y;
-			} else {
-				console.log("Touch coordinates undefined");
-			}
-		} else {
-			console.log("No valid touches detected");
-		}
-		nyu.puramai = 1;
-		is_press = true;
-		nyu.cc_press += 1;
-		touch_count++; // タッチ回数をインクリメント
-
-		if (is_savemode && nyu.cc_forsavemode > 0) {
-			nyu.cc_forsavemode = 0;
-			f_savemode(false)
-		}
-
-	}
+	// p5.jsのタッチイベントは無効化（ネイティブイベントで処理）
+	return;
 }
 function touchEnded(){
-	if (!is_interaction_enabled) return;
-	if (ososos != 'pc') {
-		is_press = false;
-		nyu.cc_press = 0;
-	}
+	// p5.jsのタッチイベントは無効化（ネイティブイベントで処理）
+	return;
 }
 
 // p5.jsのデフォルトタッチムーブハンドラをオーバーライド
@@ -328,3 +303,58 @@ function mouseDragged() {
 	}
 	// 通常のドラッグ処理はnyu_kihon()で行う
 }
+
+// ネイティブタッチイベントリスナーの設定（p5.js準備後に実行）
+window.addEventListener('load', function() {
+	// touchstartのネイティブ処理
+	document.addEventListener('touchstart', function(e) {
+		if (!is_interaction_enabled) return;
+		
+		// 0.29秒後、最初のタップで完全にインタラクション有効化
+		if (is_interaction_ready && !is_first_touch_done) {
+			is_first_touch_done = true;
+		}
+		
+		if (ososos != 'pc' && e.touches.length > 0) {
+			if (!is_user_started) f_usertouchstart();
+			
+			// タッチ情報を保存
+			currentTouches = e.touches;
+			
+			// 座標を取得
+			var touch = e.touches[0];
+			if (touch && touch.clientX !== undefined && touch.clientY !== undefined) {
+				nyu.now_tx = nyu.sta_tx = touch.clientX;
+				nyu.now_ty = nyu.sta_ty = touch.clientY;
+			}
+			
+			nyu.puramai = 1;
+			is_press = true;
+			nyu.cc_press += 1;
+			touch_count++; // タッチ回数をインクリメント
+			
+			if (is_savemode && nyu.cc_forsavemode > 0) {
+				nyu.cc_forsavemode = 0;
+				f_savemode(false);
+			}
+		}
+	}, {passive: false});
+	
+	// touchendのネイティブ処理
+	document.addEventListener('touchend', function(e) {
+		if (!is_interaction_enabled) return;
+		
+		if (ososos != 'pc') {
+			is_press = false;
+			nyu.cc_press = 0;
+			currentTouches = null;
+		}
+	}, {passive: false});
+	
+	// touchmoveのネイティブ処理（touches情報を更新）
+	document.addEventListener('touchmove', function(e) {
+		if (ososos != 'pc' && e.touches.length > 0) {
+			currentTouches = e.touches;
+		}
+	}, {passive: false});
+});
