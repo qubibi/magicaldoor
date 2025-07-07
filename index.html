@@ -242,6 +242,15 @@ https://archive.org/details/mysz-gmeiner-m-3-side-b/12+–+Mysz-Gmeiner+M+3+Side
   document.addEventListener('touchstart', handleFirstInteraction, {passive: false, capture: true});
   document.addEventListener('mousedown', handleFirstInteraction, {passive: false, capture: true});
   
+  // touchmoveがブロックされないように明示的に処理を追加
+  document.addEventListener('touchmove', function(e) {
+    // インタラクションが有効になったら、touchmoveは通過させる
+    if (is_interaction_enabled && is_first_touch_done) {
+      // 何もせずに通過させる（captureフェーズでも止めない）
+      return;
+    }
+  }, {passive: false, capture: true});
+  
   // ネイティブtouchstartカウント（デバッグ用）
   document.addEventListener('touchstart', function(e) {
     native_touchstart_count++;
