@@ -357,6 +357,7 @@ window.addEventListener('load', function() {
 	// touchmoveのネイティブ処理（touches情報を更新）
 	document.addEventListener('touchmove', function(e) {
 		if (ososos != 'pc' && e.touches.length > 0) {
+			e.preventDefault(); // スクロールを防ぎ、touchmoveを確実に受け取る
 			currentTouches = e.touches;
 			// デバッグ用：Y座標を直接グローバル変数に保存
 			window.debug_touch_y = e.touches[0].clientY;
